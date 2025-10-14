@@ -4,9 +4,9 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\Article;
-use App\Services\News\NewsSourceInterface;
 use App\Services\News\NewsAPISource;
 use App\Services\News\NewYorkTimesAPISource;
+use App\Services\News\TheGuardianAPISource;
 
 class AggregateNews extends Command
 {
@@ -32,6 +32,7 @@ class AggregateNews extends Command
         $sources = [
             new NewsAPISource(),
             new NewYorkTimesAPISource(), 
+            new TheGuardianAPISource(), 
         ];
 
         foreach ($sources as $source) {
