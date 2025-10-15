@@ -1,61 +1,148 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📘 `Laravel_news_data_aggregator` Simple Backend Project Documentation
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is the backend implementation for a **news aggregator** application built with **PHP** and **Laravel**. The system is responsible for fetching articles from multiple third-party news sources (**NewsAPI**, **New York Times**, **The Guardian**), storing them in a local database (**MySQL**), and serving them via a clean, filterable API endpoint.
 
-## About Laravel
+User authentication has been explicitly removed, making all API endpoints publicly accessible.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🧩 Features
+- Data Aggregation: Fetches and normalizes articles from multiple external APIs (e.g., NewsAPI, New York Times, The Guardian).
+- Scheduled Updates: Uses Laravel's scheduler to regularly update the local article database.
+- Filterable API: Provides a single, powerful API endpoint to search and filter articles by keyword, date, category, and source.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 🚀 Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP (8.1+)
+- Composer
+- A Relational Database (MySQL)
+- API key: [NewsAPI](https://newsapi.org/) | [New York Times](https://developer.nytimes.com/apis) | [The Guardian](https://open-platform.theguardian.com/)
+---
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## ⚙️ Configuration
+1. Clone the Repository:
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+# Clone the repo
+git clone https://github.com/AldythNahak/Laravel_news_data_aggregator.git
+cd Laravel_news_data_aggregator
+```
 
-## Laravel Sponsors
+2. Install Dependencies:
+```bash
+composer install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+3. Configure Environment:
+- Copy the example environment file: ``cp .env.example .env``
+- Set your database credentials (``DB_*`` variables).
+- Set your API keys for all configured news sources (e.g., ``NEWSAPI_KEY, NYTAPI_KEY, THEGUARDIANAPI_KEY``).
 
-### Premium Partners
+4. Generate Application Key:
+```bash
+php artisan key:generate
+```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+5. Run Migrations:
+```bash
+php artisan migrate
+```
 
-## Contributing
+## 📅 Data Aggregation and Scheduling
+The application uses an Artisan command to fetch data from all integrated news sources and update the local database.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. Manual Execution:
+```bash
+php artisan app:aggregate-news
+```
 
-## Code of Conduct
+2. Automated Execution:
+The command is scheduled to run periodically using Laravel's task scheduler (configured in app/Console/Kernel.php). For a production environment, ensure your system's cron job is set up to call the scheduler every 15 minutes:
+```bash
+* * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 📄 API Documentation
+The news aggregator provides one primary endpoint for retrieving and filtering articles.
+Endpoint: ``GET /api/articles``
 
-## Security Vulnerabilities
+Retrieves a paginated list of articles from the database, allowing for multiple filtering options.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| Parameter | Type | Optional? | Description | Example Value |
+|:-----------|:------:|:----------:|:-------------|:---------------|
+| `search` | `string` | ✅ | Keywords to search against the article title and content | `"Indonesia"` |
+| `sources` | `string` | ✅ | source names of the news (source_name in DB) | `NewsAPI`, `NewYorkTimesAPI`, `TheGuardianAPI` |
+| `date` | `string` | ✅ | Filters articles published on a specific date (YYYY-MM-DD) | `2025-10-14` |
+| `page` | `integer` | ✅ | pecifies the page number for pagination. (Default: 1) | `2` |
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Example Request (with all filters)
+Retrieves the second page of articles published today from "NewsAPI" and "NYT", searching for "AI" within the "Technology" category. 
+```bash
+api/articles?search=president&sources=NewsAPI,NewYorkTimesAPI&date=2025-10-14
+```
+Example Success Response (JSON)
+```bash
+{
+    "current_page": 1,
+    "data": [
+        {
+            "id": 199,
+            "title": "North Carolina Republicans heed Trump’s call to redraw congressional map - The Washington Post",
+            "content": "North Carolinas Republican-led legislature said Monday that it will soon begin work on a new congressional map that could yield another Republican-leaning district in the state.\r\nPresident Trump earn… [+280 chars]",
+            "author": "Alec Dent",
+            "source_name": "NewsAPI",
+            "category": "General",
+            "url": "https://www.washingtonpost.com/politics/2025/10/13/north-carolina-redistricting-map-trump/",
+            "image_url": "https://www.washingtonpost.com/wp-apps/imrs.php?src=https://arc-anglerfish-washpost-prod-washpost.s3.amazonaws.com/public/ZJUF46DFTV7RYWCH7Y32QIALDY_size-normalized.jpg&w=1440",
+            "published_at": "2025-10-14T04:16:00.000000Z",
+            "created_at": "2025-10-15T08:52:22.000000Z",
+            "updated_at": "2025-10-15T08:52:22.000000Z"
+        },
+        // ... more article objects
+    ],
+    "first_page_url": "http://localhost:8000/api/articles?page=1",
+    "from": 1,
+    "last_page": 1,
+    "last_page_url": "http://localhost:8000/api/articles?page=1",
+    "links": [
+        {
+            "url": null,
+            "label": "&laquo; Previous",
+            "page": null,
+            "active": false
+        },
+        {
+            "url": "http://localhost:8000/api/articles?page=1",
+            "label": "1",
+            "page": 1,
+            "active": true
+        },
+        {
+            "url": null,
+            "label": "Next &raquo;",
+            "page": null,
+            "active": false
+        }
+    ],
+    "next_page_url": null,
+    "path": "http://localhost:8000/api/articles",
+    "per_page": 20,
+    "prev_page_url": null,
+    "to": 9,
+    "total": 9
+}
+```
+
+## 🧑‍💻 Author
+
+**Aldyth Nahak**  
+[LinkedIn](https://linkedin.com/in/aldythnahak) | [GitHub](https://github.com/AldythNahak)
+
+---
+
+## ⭐️ Contribute or Follow
+
+Feel free to fork, clone, or star this repo if you find it helpful!
