@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\News;
 
 use Illuminate\Support\Facades\Http;
@@ -11,7 +12,7 @@ class NewsAPISource implements NewsSourceInterface
     public function __construct()
     {
         $this->apiKey = env('NEWSAPI_KEY');
-        
+
         if (empty($this->apiKey)) {
             throw new \Exception('NEWSAPI_KEY is not set in the .env file');
         }
@@ -19,27 +20,38 @@ class NewsAPISource implements NewsSourceInterface
 
     public function fetchArticles(array $params = []): array
     {
-        $response = Http::get("https://newsapi.org/v2/top-headlines", [
-            'apiKey' => $this->apiKey,
-            'country' => 'us',
-        ]);
+        $listCategory = ["business", "entertainment", "general", "health", "science", "sports", "technology"];
+        $articles = [];
 
-        if ($response->failed() || !isset($response->json()['articles'])) {
-            return [];
+        foreach ($listCategory as $category) {
+            $response = Http::get("https://newsapi.org/v2/top-headlines", [
+                'apiKey' => $this->apiKey,
+                'country' => 'us',
+                'category' => $category
+            ]);
+
+            if ($response->failed() || !isset($response->json()['articles'])) {
+                echo "- ❌ Failed Fetching $category\n";
+                continue;
+            }
+
+            $result = array_map(function ($article) use ($category) {
+                return [
+                    'title' => $article['title'],
+                    'content' => $article['content'],
+                    'author' => $article['author'] ?? 'Unknown',
+                    'source_name' => self::SOURCE_NAME,
+                    'url' => $article['url'],
+                    'image_url' => $article['urlToImage'],
+                    'published_at' => \Carbon\Carbon::parse($article['publishedAt']),
+                    'category' => $category,
+                ];
+            }, $response->json()['articles']);
+
+            $articles = array_merge($articles, $result);
         }
 
-        return array_map(function ($article) {
-            return [
-                'title' => $article['title'],
-                'content' => $article['content'],
-                'author' => $article['author'] ?? 'Unknown',
-                'source_name' => self::SOURCE_NAME,
-                'url' => $article['url'],
-                'image_url' => $article['urlToImage'],
-                'published_at' => \Carbon\Carbon::parse($article['publishedAt']),
-                'category' => 'General',
-            ];
-        }, $response->json()['articles']);
+        return $articles;
     }
 
     public function getSourceName(): string

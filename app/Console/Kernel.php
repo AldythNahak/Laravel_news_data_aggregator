@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('app:aggregate-news')->everyFifteenMinutes();
+        $schedule->command('app:aggregate-news')->everyThirtyMinutes();
     }
 
     /**

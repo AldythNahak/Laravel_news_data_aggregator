@@ -59,7 +59,7 @@ php artisan app:aggregate-news
 ```
 
 2. Automated Execution:
-The command is scheduled to run periodically using Laravel's task scheduler (configured in app/Console/Kernel.php). For a production environment, ensure your system's cron job is set up to call the scheduler every 15 minutes:
+The command is scheduled to run periodically using Laravel's task scheduler (configured in app/Console/Kernel.php). For a production environment, ensure your system's cron job is set up to call the scheduler every 30 minutes:
 ```bash
 * * * * * cd /path/to/your/project && php artisan schedule:run >> /dev/null 2>&1
 ```
@@ -74,6 +74,7 @@ Retrieves a paginated list of articles from the database, allowing for multiple 
 |:-----------|:------:|:----------:|:-------------|:---------------|
 | `search` | `string` | ✅ | Keywords to search against the article title and content | `"Indonesia"` |
 | `sources` | `string` | ✅ | source names of the news (source_name in DB) | `NewsAPI`, `NewYorkTimesAPI`, `TheGuardianAPI` |
+| `category` | `string` | ✅ | category/sections of the news | `business`, `entertainment`, `general`, `health`, `science`, `sports`, `technology` |
 | `date` | `string` | ✅ | Filters articles published on a specific date (YYYY-MM-DD) | `2025-10-14` |
 | `page` | `integer` | ✅ | pecifies the page number for pagination. (Default: 1) | `2` |
 

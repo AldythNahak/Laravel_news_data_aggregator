@@ -30,8 +30,8 @@ class AggregateNews extends Command
     public function handle()
     {
         $sources = [
-            new NewsAPISource(),
-            new NewYorkTimesAPISource(), 
+            // new NewsAPISource(),
+            // new NewYorkTimesAPISource(), 
             new TheGuardianAPISource(), 
         ];
 
